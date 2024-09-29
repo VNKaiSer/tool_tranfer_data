@@ -2,3 +2,7 @@ myenv
 .vscode
 data
 .env
+build
+dist
+main.spec
+.DS_Store
