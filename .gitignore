@@ -1,3 +1,4 @@
 myenv
 .vscode
 data
+.env
