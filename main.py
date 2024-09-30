@@ -20,9 +20,15 @@ def create_connection(host_name, user_name, user_password, db_name):
             user=user_name,
             passwd=user_password,
             database=db_name,
-            allow_local_infile=True  # Bật cho phép LOAD DATA LOCAL
+            allow_local_infile=True,  # Bật cho phép LOAD DATA LOCAL
+            charset='utf8mb4',  # Thêm tham số để sử dụng UTF-8
+            use_unicode=True  # Đảm bảo MySQL xử lý đúng kiểu Unicode
         )
-        print("Kết nối MySQL thành công")
+        cursor = connection.cursor()
+        cursor.execute("SET NAMES 'utf8mb4';")
+        cursor.execute("SET CHARACTER SET utf8mb4;")
+        cursor.execute("SET character_set_connection=utf8mb4;")
+        print("Kết nối MySQL thành công với mã hóa UTF-8")
     except Error as e:
         print(f"Không thể kết nối MySQL: {e}")
     return connection
@@ -31,7 +37,7 @@ def create_connection(host_name, user_name, user_password, db_name):
 def convert_excel_to_csv(file_path):
     df = pd.read_excel(file_path)
     csv_file_path = file_path.replace('.xlsx', '.csv').replace('.xls', '.csv')
-    df.to_csv(csv_file_path, index=False)
+    df.to_csv(csv_file_path, index=False, encoding='utf-8')
     return csv_file_path
 
 # Hàm nhập dữ liệu vào MySQL bằng Bulk Insert
@@ -39,7 +45,7 @@ def bulk_insert_from_csv(connection, csv_file_path, progress_label, progress_bar
     cursor = connection.cursor()
     insert_query = f"""
     LOAD DATA LOCAL INFILE '{csv_file_path}'
-    INTO TABLE CustomsDeclaration
+    INTO TABLE XK
     FIELDS TERMINATED BY ',' 
     ENCLOSED BY '\"'
     LINES TERMINATED BY '\n'

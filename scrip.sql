@@ -127,3 +127,44 @@ CREATE TABLE `CustomsDeclaration` (
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
 -- Dump completed on 2024-09-29 12:03:22
+
+-- table ERC
+CREATE TABLE ERC (
+    Id BIGINT auto_increment PRIMARY KEY,
+    ERC VARCHAR(255),
+    ERC_Convert VARCHAR(255),
+    ERC_Sub VARCHAR(255),
+    Province_City VARCHAR(255),
+    District_City VARCHAR(255),
+    Ward VARCHAR(255),
+    Province_City_Cao VARCHAR(255),
+    District_City_Cao VARCHAR(255),
+    Ward_Cao VARCHAR(255),
+    Add VARCHAR(500),
+    Phone VARCHAR(255)
+) CHARACTER SET utf8mb4;
+CREATE INDEX idx_erc ON ERC (ERC);
+-- table Eximcode
+CREATE TABLE Eximcode (
+    TRADE VARCHAR(255),
+    TradeType VARCHAR(10),
+    TradeName VARCHAR(255),
+    INSTRUCTION TEXT,
+    KHAIKETHOP TEXT,
+    GHICHU TEXT
+) CHARACTER SET utf8mb4;
+CREATE INDEX idx_eximcode ON Eximcode (TRADE);
+-- table CustomsOffice
+CREATE TABLE CustomerOffice (
+    CustomsOffice VARCHAR(10),
+    CustomsOfficeName VARCHAR(255),
+    CustomsOfficeNameShort VARCHAR(50),
+    CustomsOfficeName2 VARCHAR(255),
+    MaDoi VARCHAR(10),
+    Province_City VARCHAR(100),
+    District_City VARCHAR(100),
+    CucHaiQuan VARCHAR(100),
+    CustomsOfficeMaster VARCHAR(10),
+    Note TEXT
+) CHARACTER SET utf8mb4;
+CREATE INDEX idx_customeroffice ON CustomerOffice (CustomsOffice);
