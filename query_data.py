@@ -68,20 +68,38 @@ def update_data_by_year(connection, year):
         update_erc_by_month(connection, month, year)
 
 # Thêm hàm để xóa dữ liệu của tháng 4 và tháng 10
-def delete_data_for_months(connection, year, months):
+def delete_data_by_batch(connection, month, year, batch_size=100):
     try:
         cursor = connection.cursor()
-        for month in months:
-            delete_query = f"DELETE FROM XK WHERE MONTH(DATE) = {month} AND YEAR(DATE) = {year}"
+        count = 0
+
+        while True:
+            # Lấy một loạt bản ghi để xóa
+            select_query = f"SELECT Id FROM XK WHERE MONTH(DATE) = {month} AND YEAR(DATE) = {year} LIMIT {batch_size}"
+            cursor.execute(select_query)
+            rows = cursor.fetchall()
+
+            if not rows:  # Nếu không còn bản ghi nào để xóa thì dừng
+                break
+
+            ids = ', '.join(str(row[0]) for row in rows)  # Lấy danh sách Id để xóa
+            delete_query = f"DELETE FROM XK WHERE Id IN ({ids})"
             cursor.execute(delete_query)
-            connection.commit()
-            print(f"Deleted records for month {month}, year {year}")
+            connection.commit()  # Xác nhận sau mỗi batch
+
+            count += len(rows)
+            print(f"Deleted {count} records for month {month}, year {year}")
 
     except Error as e:
         print(f"Error: {e}")
     finally:
         if connection.is_connected():
             cursor.close()
+
+def delete_data_for_months(connection, year, months, batch_size=100):
+    for month in months:
+        print(f"Deleting data for month {month}, year {year}")
+        delete_data_by_batch(connection, month, year, batch_size)
 
 # Sử dụng hàm kết nối và thực hiện update theo tháng
 DB_HOST = os.getenv('DB_HOST')
