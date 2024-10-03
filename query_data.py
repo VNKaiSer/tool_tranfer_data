@@ -67,6 +67,22 @@ def update_data_by_year(connection, year):
         print(f"Processing month {month} of year {year}")
         update_erc_by_month(connection, month, year)
 
+# Thêm hàm để xóa dữ liệu của tháng 4 và tháng 10
+def delete_data_for_months(connection, year, months):
+    try:
+        cursor = connection.cursor()
+        for month in months:
+            delete_query = f"DELETE FROM XK WHERE MONTH(DATE) = {month} AND YEAR(DATE) = {year}"
+            cursor.execute(delete_query)
+            connection.commit()
+            print(f"Deleted records for month {month}, year {year}")
+
+    except Error as e:
+        print(f"Error: {e}")
+    finally:
+        if connection.is_connected():
+            cursor.close()
+
 # Sử dụng hàm kết nối và thực hiện update theo tháng
 DB_HOST = os.getenv('DB_HOST')
 DB_USER = os.getenv('DB_USER')
@@ -76,7 +92,10 @@ DB_NAME = os.getenv('DB_NAME')
 connection = create_connection(DB_HOST, DB_USER, DB_PASSWORD, DB_NAME)
 
 if connection:
-    update_data_by_year(connection, 2023)  # Chạy cập nhật cho năm 2023
+    # update_data_by_year(connection, 2023)  # Chạy cập nhật cho năm 2023
+
+    # Xóa dữ liệu của tháng 4 và tháng 10
+    delete_data_for_months(connection, 2023, [4, 10])
 
     # Đóng kết nối sau khi hoàn thành
     if connection.is_connected():
