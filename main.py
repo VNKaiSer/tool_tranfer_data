@@ -42,6 +42,15 @@ def convert_excel_to_csv(file_path):
 
 # Hàm nhập dữ liệu vào MySQL bằng Bulk Insert
 def bulk_insert_from_csv(connection, csv_file_path, progress_label, progress_bar):
+    # Read the CSV file into a DataFrame
+    df = pd.read_csv(csv_file_path)
+
+    # Add leading zero to ERC if its length is 9
+    df['ERC'] = df['ERC'].apply(lambda x: f'0{x}' if len(str(x)) == 9 else x)
+
+    # Save the modified DataFrame back to the CSV file
+    df.to_csv(csv_file_path, index=False, encoding='utf-8')
+
     cursor = connection.cursor()
     insert_query = f"""
     LOAD DATA LOCAL INFILE '{csv_file_path}'
@@ -68,8 +77,8 @@ def bulk_insert_from_csv(connection, csv_file_path, progress_label, progress_bar
 def start_import():
     filenames = filedialog.askopenfilenames(title="Chọn tệp Excel", filetypes=[("Excel files", "*.xlsx *.xls")])
     if filenames:
-        progress_label['text'] = "Đang xử lý..."  # Cập nhật nhãn
-        progress_bar['value'] = 0  # Reset thanh tiến trình
+        progress_label['text'] = "Đang xử lý..."  =
+        progress_bar['value'] = 0  
         
         threading.Thread(target=process_files, args=(filenames,)).start()
 
@@ -79,18 +88,18 @@ def process_files(filenames):
     DB_USER = os.getenv('DB_USER')
     DB_PASSWORD = os.getenv('DB_PASSWORD')
     DB_NAME = os.getenv('DB_NAME')
+    print(DB_HOST, DB_USER, DB_PASSWORD, DB_NAME)
 
     connection = create_connection(DB_HOST, DB_USER, DB_PASSWORD, DB_NAME)
 
     if connection:
         total_files = len(filenames)
         for idx, file in enumerate(filenames, start=1):
-            csv_file_path = convert_excel_to_csv(file)  # Chuyển đổi từng tệp Excel sang CSV
+            csv_file_path = convert_excel_to_csv(file)  
             bulk_insert_from_csv(connection, csv_file_path, progress_label, progress_bar)
-            progress_bar['value'] = (idx / total_files) * 100  # Cập nhật thanh tiến trình
-
-        progress_label['text'] = f"Đã thêm {total_files} tệp thành công!"  # Cập nhật nhãn thành công
-        progress_bar['value'] = 100  # Hoàn tất thanh tiến trình
+            progress_bar['value'] = (idx / total_files) * 100  
+        progress_label['text'] = f"Đã thêm {total_files} tệp thành công!"  
+        progress_bar['value'] = 100 
 
 # Tạo giao diện chính bằng Tkinter
 root = tk.Tk()
