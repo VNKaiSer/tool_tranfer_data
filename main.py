@@ -65,7 +65,7 @@ def bulk_insert_from_csv(connection, csv_file_path, progress_label, progress_bar
     POL, Value, TaxableValue, TaxValue, CDSLine, Note, 
     CDSCompletedDate, CDSCompletedHour, CDSCancelDate, CDSCancelHour, 
     Officer, Officer2, HSCode, Commodity, UnitQuantity, 
-    UnitCost, InvoiceBL, Currency, InvoiceValue, TaxableValue2, 
+    InvoiceBL, UnitCost, Currency, InvoiceValue, TaxableValue2, 
     TaxUnit, TaxRate, TaxClass, Tax, RefDoc1, RefDoc2, CreatedDate)
     """
     
