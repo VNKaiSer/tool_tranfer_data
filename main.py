@@ -77,7 +77,7 @@ def bulk_insert_from_csv(connection, csv_file_path, progress_label, progress_bar
 def start_import():
     filenames = filedialog.askopenfilenames(title="Chọn tệp Excel", filetypes=[("Excel files", "*.xlsx *.xls")])
     if filenames:
-        progress_label['text'] = "Đang xử lý..."  =
+        progress_label['text'] = "Đang xử lý..."
         progress_bar['value'] = 0  
         
         threading.Thread(target=process_files, args=(filenames,)).start()
