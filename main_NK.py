@@ -49,6 +49,7 @@ def convert_excel_to_csv(file_path):
 def validate_columns(df, expected_columns):
     file_columns = list(df.columns)
     
+    # Kiểm tra cột thiếu
     missing_columns = set(expected_columns) - set(file_columns)
     extra_columns = set(file_columns) - set(expected_columns)
     
@@ -64,54 +65,74 @@ def validate_columns(df, expected_columns):
         
     return True
 
-# Hàm nhập dữ liệu vào MySQL bằng Bulk Insert
 def bulk_insert_from_csv(connection, csv_file_path, progress_label, progress_bar):
     try:
         df = pd.read_csv(csv_file_path, low_memory=False)
 
         # Kiểm tra thứ tự cột
-        expected_columns = ['CDS', 'CustomsOffice', 'C1', 'C2', 'C3', 'TPSMode', 'TradeType', 'DATE', 'HOUR', 
-                            'DateUpdated', 'HourUpdated', 'ERC', 'Exportor', 'Importor', 'ImportCountry', 
-                            'BLNumber', 'Quantity', 'UOM', 'GWeight', 'WeightUOM', 'FinalDestination', 
-                            'POL', 'Value', 'TaxableValue', 'TaxValue', 'CDSLine', 'Note', 
-                            'CDSCompletedDate', 'CDSCompletedHour', 'CDSCancelDate', 'CDSCancelHour', 
-                            'Officer', 'Officer2', 'HSCode', 'Commodity', 'UnitQuantity', 
-                            'InvoiceBL', 'UnitCost', 'Currency', 'InvoiceValue', 'TaxableValue2', 
-                            'TaxUnit', 'TaxRate', 'TaxClass', 'Tax', 'RefDoc1', 'RefDoc2', 'CreatedDate']
+        expected_columns = [
+            "CDS", "CustomsOffice", "C1", "C2", "C3", "TPSMode", "TradeType", 
+            "Date", "Hour", "DateUpdated", "HourUpdated", "ERC", "Importer", 
+            "ImporterPhone", "ImporterNotify", "Exporter", "EmportCountry", 
+            "BL", "BL2", "BL3", "BL4", "BL5", "Quantity", "QuantityUom", 
+            "GWeight", "WeightUom", "NumberContainer", "POD", "POL", 
+            "TransportName", "ArrivalDate", "PaymentMethod", "InvoiceValue", 
+            "LocalInvoiceValue", "TaxValue", "CdsLine", "PermitDate", 
+            "PermitHour", "CdsCompletedDate", "CompletedHour", "CdsCancelDate", 
+            "CancelHour", "Officer", "Officer2", "HSCode", "Commodity", 
+            "Quantity2", "QuantityUom2", "InvoiceDetails", "UnitCost", 
+            "Curr", "CurrQuantityUom", "InvoiceValueVnd", "TaxableValue", 
+            "TaxUnit", "TaxRate", "TaxValue2", "OriginCountry", "DocRef", 
+            "ImportClass", "ImportTaxCode", "TaxIncentiveCode"
+        ]
+
         
         if not validate_columns(df, expected_columns):
             progress_label['text'] = "Thứ tự cột không đúng. Vui lòng chọn lại file."
-            return
-        
+            return False  # Trả về False khi không hợp lệ
+
+        # Add leading zero to ERC if its length is 9
         df['ERC'] = df['ERC'].apply(lambda x: f'0{x}' if len(str(x)) == 9 else x)
 
+        # Ghi lại CSV sau khi sửa đổi
         df.to_csv(csv_file_path, index=False, encoding='utf-8')
 
         cursor = connection.cursor()
         insert_query = f"""
         LOAD DATA LOCAL INFILE '{csv_file_path}'
-        INTO TABLE XK2024
+        INTO TABLE NK
         FIELDS TERMINATED BY ',' 
         ENCLOSED BY '\"'
         LINES TERMINATED BY '\n'
         IGNORE 1 ROWS
-        (CDS, CustomsOffice, C1, C2, C3, TPSMode, TradeType, DATE, HOUR, 
-        DateUpdated, HourUpdated, ERC, Exportor, Importor, ImportCountry, 
-        BLNumber, Quantity, UOM, GWeight, WeightUOM, FinalDestination, 
-        POL, Value, TaxableValue, TaxValue, CDSLine, Note, 
-        CDSCompletedDate, CDSCompletedHour, CDSCancelDate, CDSCancelHour, 
-        Officer, Officer2, HSCode, Commodity, UnitQuantity, 
-        InvoiceBL, UnitCost, Currency, InvoiceValue, TaxableValue2, 
-        TaxUnit, TaxRate, TaxClass, Tax, RefDoc1, RefDoc2, CreatedDate)
+        (CDS, CustomsOffice, C1, C2, C3, TPSMode, TradeType, 
+        Date, Hour, DateUpdated, HourUpdated, ERC, Importer, 
+        ImporterPhone, ImporterNotify, Exporter, EmportCountry, 
+        BL, BL2, BL3, BL4, BL5, Quantity, QuantityUom, 
+        GWeight, WeightUom, NumberContainer, POD, POL, 
+        TransportName, ArrivalDate, PaymentMethod, InvoiceValue, 
+        LocalInvoiceValue, TaxValue, CdsLine, PermitDate, 
+        PermitHour, CdsCompletedDate, CompletedHour, CdsCancelDate, 
+        CancelHour, Officer, Officer2, HSCode, Commodity, 
+        Quantity2, QuantityUom2, InvoiceDetails, UnitCost, 
+        Curr, CurrQuantityUom, InvoiceValueVnd, TaxableValue, 
+        TaxUnit, TaxRate, TaxValue2, OriginCountry, DocRef, 
+        ImportClass, ImportTaxCode, TaxIncentiveCode);
         """
         cursor.execute(insert_query)
         connection.commit()
         print(f"Dữ liệu đã được nhập thành công từ {csv_file_path}")
+        return True  # Trả về True khi nhập thành công
     except Error as e:
         messagebox.showerror("Lỗi khi nhập dữ liệu", f"Lỗi khi import dữ liệu: {e}")
-        connection.rollback()  
+        connection.rollback()  # Rollback nếu gặp lỗi
+        progress_label['text'] = "Lỗi khi nhập dữ liệu."  # Cập nhật nhãn với thông báo lỗi
+        return False  # Trả về False khi gặp lỗi
     except Exception as e:
         messagebox.showerror("Lỗi không xác định", f"Lỗi không xác định: {e}")
+        return False  # Trả về False khi gặp lỗi không xác định
+
+
 
 # Hàm chọn file Excel và bắt đầu import
 def start_import():
